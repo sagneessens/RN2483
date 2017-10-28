@@ -25,6 +25,7 @@ package rn2483
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/bullettime/logger"
 )
@@ -48,6 +49,8 @@ func MacReset(band uint16) bool {
 		logger.Warning.Println("mac reset error: invalid parameter")
 		return false
 	}
+
+	state.macPaused = false
 
 	return true
 }
@@ -74,6 +77,9 @@ func MacPause() uint32 {
 		return 0
 	}
 
+	state.macPaused = true
+	state.macPausedEnd = time.Now().Add(time.Duration(value) * time.Millisecond)
+
 	return uint32(value)
 }
 
@@ -92,5 +98,20 @@ func MacResume() bool {
 		return false
 	}
 
+	state.macPaused = false
+
 	return true
+}
+
+// The length is passed in milliseconds.
+func isMacPaused(length int) bool {
+	// An offset of 100 milliseconds is added to ensure we have enough
+	// time left over
+	d := time.Duration(length)*time.Millisecond + time.Duration(100)
+
+	if state.macPaused {
+		return time.Now().Add(d).Before(state.macPausedEnd)
+	}
+
+	return false
 }

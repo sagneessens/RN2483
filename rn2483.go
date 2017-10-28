@@ -23,6 +23,7 @@
 package rn2483
 
 import (
+	"os"
 	"time"
 
 	"github.com/bullettime/logger"
@@ -38,10 +39,18 @@ var (
 
 func init() {
 	// TODO make use of viper to get this from config
-	config = &serial.Config{ReadTimeout: time.Millisecond * 500}
+	config = &serial.Config{ReadTimeout: time.Millisecond * 100}
 }
 
 func read() (int, []byte) {
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Debug.Println("Are you connected?")
+			logger.Error.Println(r)
+			os.Exit(2)
+		}
+	}()
+
 	var b []byte
 
 	for {
@@ -59,6 +68,14 @@ func read() (int, []byte) {
 }
 
 func write(s string) error {
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Debug.Println("Are you connected?")
+			logger.Error.Println(r)
+			os.Exit(2)
+		}
+	}()
+
 	b := append([]byte(s), []byte("\r\n")...)
 	n, err = rn2483.Write(b)
 	if err != nil {
@@ -91,7 +108,7 @@ func Connect() {
 func Disconnect() {
 	defer func() {
 		if r := recover(); r != nil {
-			logger.Debug.Println("Recovered", r)
+			logger.Error.Println("Recovered:", r)
 		}
 	}()
 

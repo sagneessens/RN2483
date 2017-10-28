@@ -26,6 +26,7 @@ import (
 	"errors"
 	"strconv"
 	"testing"
+	"time"
 )
 
 func TestMacResetWrongArgument(t *testing.T) {
@@ -253,5 +254,34 @@ func TestMacResumeSuccess(t *testing.T) {
 
 	if MacResume() == false {
 		t.Errorf("MacResume() returned false while the serial read succeeded")
+	}
+}
+
+func TestIsMacPausedFalse(t *testing.T) {
+	state.macPaused = false
+	length := 0
+
+	if isMacPaused(length) == true {
+		t.Errorf("isMacPaused(%v) returned true while the state is set to false", length)
+	}
+}
+
+func TestIsMacPausedFalseBecauseOffset(t *testing.T) {
+	state.macPaused = true
+	state.macPausedEnd = time.Now().Add(time.Duration(100) * time.Millisecond)
+	length := 100
+
+	if isMacPaused(length) == true {
+		t.Errorf("isMacPaused(%v) returned true wile the end time + offset is too close", length)
+	}
+}
+
+func TestIsMacPausedTrue(t *testing.T) {
+	state.macPaused = true
+	state.macPausedEnd = time.Now().Add(time.Duration(200) * time.Millisecond)
+	length := 100
+
+	if isMacPaused(length) == false {
+		t.Errorf("isMacPaused(%v) returned false wile the state is set to true", length)
 	}
 }
