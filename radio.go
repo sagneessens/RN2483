@@ -259,7 +259,7 @@ func RadioSetPower(pwr int8) bool {
 
 // RadioGetSpreadingFactor reads back the current spreading factor
 // being used by the transceiver.
-// It will return an int8 between [7, 12].
+// It will return an uint8 between [7, 12].
 // If an error occured, it will return 0.
 func RadioGetSpreadingFactor() uint8 {
 	err := serialWrite("radio get sf")
@@ -293,7 +293,7 @@ func RadioSetSpreadingFactor(sf uint8) bool {
 		return false
 	}
 
-	err := serialWrite(fmt.Sprintf("radio set sf %v", sfs[sf]))
+	err := serialWrite(fmt.Sprintf("radio set sf %v", SFs[sf]))
 	if err != nil {
 		logger.Warning.Println("radio set sf error:", err)
 		return false
@@ -306,4 +306,328 @@ func RadioSetSpreadingFactor(sf uint8) bool {
 	}
 
 	return true
+}
+
+// RadioGetCrc reads back the status of the CRC header, to determine
+// if it is to be included during operation. The function will return
+// false as well if something went wrong.
+func RadioGetCrc() bool {
+	err := serialWrite("radio get crc")
+	if err != nil {
+		logger.Warning.Println("radio get crc error:", err)
+		return false
+	}
+
+	n, answer := serialRead()
+	if n == 0 {
+		logger.Warning.Println("radio get crc error: no answer")
+		return false
+	}
+
+	if string(sanitize(answer)) == "on" {
+		return true
+	}
+
+	return false
+}
+
+// RadioSetCrc enables or disables the CRC header for communications.
+// The function will return true if the command succeeded, or false
+// when it didn't.
+func RadioSetCrc(on bool) bool {
+	var state string
+	if on {
+		state = "on"
+	} else {
+		state = "off"
+	}
+
+	err := serialWrite(fmt.Sprintf("radio set crc %v", state))
+	if err != nil {
+		logger.Warning.Println("radio set crc error:", err)
+		return false
+	}
+
+	n, answer := serialRead()
+	if n == 0 || string(sanitize(answer)) != "ok" {
+		logger.Warning.Println("radio set crc error: invalid parameter")
+		return false
+	}
+
+	return true
+}
+
+// RadioGetIqi reads back the status of the Invert IQ functionality.
+// The function will return false as well if something went wrong.
+func RadioGetIqi() bool {
+	err := serialWrite("radio get iqi")
+	if err != nil {
+		logger.Warning.Println("radio get iqi error:", err)
+		return false
+	}
+
+	n, answer := serialRead()
+	if n == 0 {
+		logger.Warning.Println("radio get iqi error: no answer")
+		return false
+	}
+
+	if string(sanitize(answer)) == "on" {
+		return true
+	}
+
+	return false
+}
+
+// RadioSetIqi enables or disables the Invert IQ for communications.
+// The function will return true if the command succeeded, or false
+// when it didn't.
+func RadioSetIqi(on bool) bool {
+	var state string
+	if on {
+		state = "on"
+	} else {
+		state = "off"
+	}
+
+	err := serialWrite(fmt.Sprintf("radio set iqi %v", state))
+	if err != nil {
+		logger.Warning.Println("radio set iqi error:", err)
+		return false
+	}
+
+	n, answer := serialRead()
+	if n == 0 || string(sanitize(answer)) != "ok" {
+		logger.Warning.Println("radio set iqi error: invalid parameter")
+		return false
+	}
+
+	return true
+}
+
+// RadioGetCodingRate reads back the current coding rate
+// being used by the transceiver.
+// It will return an uint8 between [5, 8].
+// If an error occured, it will return 0.
+func RadioGetCodingRate() uint8 {
+	err := serialWrite("radio get cr")
+	if err != nil {
+		logger.Warning.Println("radio get cr error:", err)
+		return 0
+	}
+
+	n, answer := serialRead()
+	if n == 0 {
+		logger.Warning.Println("radio get cr error: no answer")
+		return 0
+	}
+
+	value, err := strconv.ParseUint(string(sanitize(answer[2:])), 10, 8)
+	if err != nil {
+		logger.Warning.Println("radio get cr error:", err)
+		return 0
+	}
+
+	return uint8(value)
+}
+
+// RadioSetCodingRate sets the coding rate used during transmission.
+// The spreading factor has to be passed as an uint8 between [5, 8].
+// The function will return true if the command succeeded.
+// If an error occured, it will return false.
+func RadioSetCodingRate(cr uint8) bool {
+	if cr < 5 || cr > 8 {
+		logger.Warning.Println("radio set cr error: invalid coding rate", cr)
+		return false
+	}
+
+	err := serialWrite(fmt.Sprintf("radio set cr %v", CodingRates[cr]))
+	if err != nil {
+		logger.Warning.Println("radio set cr error:", err)
+		return false
+	}
+
+	n, answer := serialRead()
+	if n == 0 || string(sanitize(answer)) != "ok" {
+		logger.Warning.Println("radio set cr error: invalid parameter")
+		return false
+	}
+
+	return true
+}
+
+// RadioGetWatchDogTimer reads back, in milliseconds,
+// the length used for the watchdog time-out.
+// It will return an uint32.
+// If an error occured, it will return 0 (this also means it is disabled).
+func RadioGetWatchDogTimer() uint32 {
+	err := serialWrite("radio get wdt")
+	if err != nil {
+		logger.Warning.Println("radio get wdt error:", err)
+		return 0
+	}
+
+	n, answer := serialRead()
+	if n == 0 {
+		logger.Warning.Println("radio get wdt error: no answer")
+		return 0
+	}
+
+	value, err := strconv.ParseUint(string(sanitize(answer)), 10, 32)
+	if err != nil {
+		logger.Warning.Println("radio get wdt error:", err)
+		return 0
+	}
+
+	return uint32(value)
+}
+
+// RadioSetWatchDogTimer updates the time-out length, in milliseconds,
+// applied to the radio Watchdog Timer. If this functionality is enabled,
+// then the Watchdog Timer is started for every transceiver reception or
+// transmission. The Watchdog Timer is stopped when the operation in
+// progress in finished.
+// The function will return true if the command succeeded.
+// If an error occured, it will return false.
+func RadioSetWatchDogTimer(length uint32) bool {
+	err := serialWrite(fmt.Sprintf("radio set wdt %v", length))
+	if err != nil {
+		logger.Warning.Println("radio set wdt error:", err)
+		return false
+	}
+
+	n, answer := serialRead()
+	if n == 0 || string(sanitize(answer)) != "ok" {
+		logger.Warning.Println("radio set wdt error: invalid parameter")
+		return false
+	}
+
+	return true
+}
+
+// RadioGetSyncWord returns true if the sync word is set to public,
+// and false when it is set to private.
+// The function will return false as well if something went wrong.
+func RadioGetSyncWord() bool {
+	err := serialWrite("radio get sync")
+	if err != nil {
+		logger.Warning.Println("radio get sync error:", err)
+		return false
+	}
+
+	n, answer := serialRead()
+	if n == 0 {
+		logger.Warning.Println("radio get sync error: no answer")
+		return false
+	}
+
+	if string(sanitize(answer)) == "34" {
+		return true
+	}
+
+	return false
+}
+
+// RadioSetSyncWord sets the sync word to either public or private.
+// This is done by passing a boolean (public) which is true for public and
+// false for private.
+// The function will return true if the command succeeded, or false
+// when it didn't.
+func RadioSetSyncWord(public bool) bool {
+	var state string
+	if public {
+		state = "34"
+	} else {
+		state = "12"
+	}
+
+	err := serialWrite(fmt.Sprintf("radio set sync %v", state))
+	if err != nil {
+		logger.Warning.Println("radio set sync error:", err)
+		return false
+	}
+
+	n, answer := serialRead()
+	if n == 0 || string(sanitize(answer)) != "ok" {
+		logger.Warning.Println("radio set sync error: invalid parameter")
+		return false
+	}
+
+	return true
+}
+
+// RadioGetBandWidth reads back the current bandwidth
+// being used by the transceiver.
+// It will return an uint16 with one of the values [125, 250, 500].
+// If an error occured, it will return 0.
+func RadioGetBandWidth() uint16 {
+	err := serialWrite("radio get bw")
+	if err != nil {
+		logger.Warning.Println("radio get bw error:", err)
+		return 0
+	}
+
+	n, answer := serialRead()
+	if n == 0 {
+		logger.Warning.Println("radio get bw error: no answer")
+		return 0
+	}
+
+	value, err := strconv.ParseUint(string(sanitize(answer)), 10, 16)
+	if err != nil {
+		logger.Warning.Println("radio get bw error:", err)
+		return 0
+	}
+
+	return uint16(value)
+}
+
+// RadioSetBandWidth sets the bandwidth used during transmission.
+// The bandwidth has to be passed as an uint16 and has to be one of
+// [125, 250, 500].
+// The function will return true if the command succeeded.
+// If an error occured, it will return false.
+func RadioSetBandWidth(bw uint16) bool {
+	if _, ok := BWs[bw]; !ok {
+		logger.Warning.Println("radio set bw error: invalid bandwidth", bw)
+		return false
+	}
+
+	err := serialWrite(fmt.Sprintf("radio set bw %v", BWs[bw]))
+	if err != nil {
+		logger.Warning.Println("radio set bw error:", err)
+		return false
+	}
+
+	n, answer := serialRead()
+	if n == 0 || string(sanitize(answer)) != "ok" {
+		logger.Warning.Println("radio set bw error: invalid parameter")
+		return false
+	}
+
+	return true
+}
+
+// RadioGetSNR reads back the Signal Noise Ratio (SNR) for
+// the last received packet. The default is -128.
+func RadioGetSNR() int8 {
+	err := serialWrite("radio get snr")
+	if err != nil {
+		logger.Warning.Println("radio get snr error:", err)
+		return -128
+	}
+
+	n, answer := serialRead()
+	if n == 0 {
+		logger.Warning.Println("radio get s r error: no answer")
+		return -128
+	}
+
+	value, err := strconv.ParseInt(string(sanitize(answer)), 10, 8)
+	if err != nil {
+		logger.Warning.Println("radio get snr error:", err)
+		return -128
+	}
+
+	return int8(value)
 }

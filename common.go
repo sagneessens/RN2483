@@ -54,6 +54,21 @@ const (
 	SF12 = "sf12"
 )
 
+// The possible coding rates
+const (
+	CR5 = "4/5"
+	CR6 = "4/6"
+	CR7 = "4/7"
+	CR8 = "4/8"
+)
+
+// The possible bandwidths
+const (
+	BW1 = "125"
+	BW2 = "250"
+	BW3 = "500"
+)
+
 var (
 	state            = new(myState)
 	invalidParameter = "invalid_param"
@@ -67,13 +82,29 @@ var modulations = []string{
 	FSK,
 }
 
-var sfs = map[uint8]string{
+// SFs is the mapping of the spreading factors
+var SFs = map[uint8]string{
 	7:  SF7,
 	8:  SF8,
 	9:  SF9,
 	10: SF10,
 	11: SF11,
 	12: SF12,
+}
+
+// BWs is the mapping of the bandwidths
+var BWs = map[uint16]string{
+	125: BW1,
+	250: BW2,
+	500: BW3,
+}
+
+// CodingRates is the mapping of the coding rates
+var CodingRates = map[uint8]string{
+	5: CR5,
+	6: CR6,
+	7: CR7,
+	8: CR8,
 }
 
 func sanitize(b []byte) []byte {

@@ -774,3 +774,830 @@ func TestRadioSetSFSuccess(t *testing.T) {
 		t.Errorf("RadioSetSpreadingFactor(%v) returned false while it should succeed", sf)
 	}
 }
+
+func TestRadioGetCrcWriteError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return errors.New("Mock Write Error")
+	}
+
+	defer resetOriginals()
+
+	if RadioGetCrc() != false {
+		t.Error("RadioGetCrc() returned true while serial write failed")
+	}
+}
+
+func TestRadioGetCrcReadError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b []byte
+		return 0, b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetCrc() != false {
+		t.Error("RadioGetCrc() returned true while serial read failed")
+	}
+}
+
+func TestRadioGetCrcTrue(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("on\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetCrc() != true {
+		t.Error("RadioGetCrc() returned false while it should return true")
+	}
+}
+
+func TestRadioGetCrcFalse(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("off\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetCrc() != false {
+		t.Error("RadioGetCrc() returned true while it should return false")
+	}
+}
+
+func TestRadioSetCrcWriteError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return errors.New("Mock Write Error")
+	}
+
+	defer resetOriginals()
+
+	on := true
+	if RadioSetCrc(on) != false {
+		t.Errorf("RadioSetCrc(%v) returned true while serial write failed", on)
+	}
+}
+
+func TestRadioSetCrcReadError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b []byte
+		return 0, b
+	}
+
+	defer resetOriginals()
+
+	on := false
+	if RadioSetCrc(on) != false {
+		t.Errorf("RadioSetCrc(%v) returned true while serial write failed", on)
+	}
+}
+
+func TestRadioSetCrcSuccess(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("ok\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	on := false
+	if RadioSetCrc(on) != true {
+		t.Errorf("RadioSetCrc(%v) returned false while it should return true", on)
+	}
+}
+
+func TestRadioGetIqiWriteError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return errors.New("Mock Write Error")
+	}
+
+	defer resetOriginals()
+
+	if RadioGetIqi() != false {
+		t.Error("RadioGetIqi() returned true while serial write failed")
+	}
+}
+
+func TestRadioGetIqiReadError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b []byte
+		return 0, b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetIqi() != false {
+		t.Error("RadioGetIqi() returned true while serial read failed")
+	}
+}
+
+func TestRadioGetIqiTrue(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("on\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetIqi() != true {
+		t.Error("RadioGetIqi() returned false while it should return true")
+	}
+}
+
+func TestRadioGetIqiFalse(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("off\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetIqi() != false {
+		t.Error("RadioGetIqi() returned true while it should return false")
+	}
+}
+
+func TestRadioSetIqiWriteError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return errors.New("Mock Write Error")
+	}
+
+	defer resetOriginals()
+
+	on := true
+	if RadioSetIqi(on) != false {
+		t.Errorf("RadioSetIqi(%v) returned true while serial write failed", on)
+	}
+}
+
+func TestRadioSetIqiReadError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b []byte
+		return 0, b
+	}
+
+	defer resetOriginals()
+
+	on := false
+	if RadioSetIqi(on) != false {
+		t.Errorf("RadioSetIqi(%v) returned true while serial write failed", on)
+	}
+}
+
+func TestRadioSetIqiSuccess(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("ok\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	on := false
+	if RadioSetIqi(on) != true {
+		t.Errorf("RadioSetIqi(%v) returned false while it should return true", on)
+	}
+}
+
+func TestRadioGetCRWriteError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return errors.New("Mock Write Error")
+	}
+
+	defer resetOriginals()
+
+	if RadioGetCodingRate() != 0 {
+		t.Error("RadioGetCodingRate() returned non zero value while serial write failed")
+	}
+}
+
+func TestRadioGetCRReadError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b []byte
+		return 0, b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetCodingRate() != 0 {
+		t.Error("RadioGetCodingRate() returned non zero value while serial read failed")
+	}
+}
+
+func TestRadioGetCRConversionError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("nan\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetCodingRate() != 0 {
+		t.Error("RadioGetCodingRate() returned non zero value while conversion failed")
+	}
+}
+
+func TestRadioGetCRSuccess(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("4/5\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetCodingRate() != 5 {
+		t.Error("RadioGetCodingRate() returned value other than 5 while it should return 5")
+	}
+}
+
+func TestRadioSetCRArgumentError(t *testing.T) {
+	for i := uint8(0); i < 5; i++ {
+		cr := i
+		if RadioSetCodingRate(cr) != false {
+			t.Errorf("RadioSetCodingRate(%v) returned true with the wrong cr", cr)
+		}
+	}
+
+	for i := uint8(9); i < maxUint8; i++ {
+		cr := i
+		if RadioSetCodingRate(cr) != false {
+			t.Errorf("RadioSetCodingRate(%v) returned true with the wrong cr", cr)
+		}
+	}
+}
+
+func TestRadioSetCRWriteError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return errors.New("Mock Write Error")
+	}
+
+	defer resetOriginals()
+
+	cr := uint8(7)
+	if RadioSetCodingRate(cr) != false {
+		t.Errorf("RadioSetCodingRate(%v) returned true while serial write failed", cr)
+	}
+}
+
+func TestRadioSetCRReadError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b []byte
+		return 0, b
+	}
+
+	defer resetOriginals()
+
+	cr := uint8(7)
+	if RadioSetCodingRate(cr) != false {
+		t.Errorf("RadioSetCodingRate(%v) returned true while serial read failed", cr)
+	}
+}
+
+func TestRadioSetCRSuccess(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("ok\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	cr := uint8(7)
+	if RadioSetCodingRate(cr) != true {
+		t.Errorf("RadioSetCodingRate(%v) returned false while it should succeed", cr)
+	}
+}
+
+func TestRadioGetWDTWriteError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return errors.New("Mock Write Error")
+	}
+
+	defer resetOriginals()
+
+	if RadioGetWatchDogTimer() != 0 {
+		t.Error("RadioGetWatchDogTimer() returned non zero value while serial write failed")
+	}
+}
+
+func TestRadioGetWDTReadError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b []byte
+		return 0, b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetWatchDogTimer() != 0 {
+		t.Error("RadioGetWatchDogTimer() returned non zero value while serial read failed")
+	}
+}
+
+func TestRadioGetWDTConversionError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("nan\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetWatchDogTimer() != 0 {
+		t.Error("RadioGetWatchDogTimer() returned non zero value while conversion failed")
+	}
+}
+
+func TestRadioGetWDTSuccess(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("15000\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetWatchDogTimer() != 15000 {
+		t.Error("RadioGetWatchDogTimer() returned value other than 15000 while it should return 15000")
+	}
+}
+
+func TestRadioSetWDTWriteError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return errors.New("Mock Write Error")
+	}
+
+	defer resetOriginals()
+
+	wdt := uint32(30000)
+	if RadioSetWatchDogTimer(wdt) != false {
+		t.Errorf("RadioSetWatchDogTimer(%v) returned true while serial write failed", wdt)
+	}
+}
+
+func TestRadioSetWDTReadError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b []byte
+		return 0, b
+	}
+
+	defer resetOriginals()
+
+	wdt := uint32(30000)
+	if RadioSetWatchDogTimer(wdt) != false {
+		t.Errorf("RadioSetWatchDogTimer(%v) returned true while serial read failed", wdt)
+	}
+}
+
+func TestRadioSetWDTSuccess(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("ok\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	wdt := uint32(30000)
+	if RadioSetWatchDogTimer(wdt) != true {
+		t.Errorf("RadioSetWatchDogTimer(%v) returned false while it should succeed", wdt)
+	}
+}
+
+func TestRadioGetSWWriteError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return errors.New("Mock Write Error")
+	}
+
+	defer resetOriginals()
+
+	if RadioGetSyncWord() != false {
+		t.Error("RadioGetSyncWord() returned true while serial write failed")
+	}
+}
+
+func TestRadioGetSWReadError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b []byte
+		return 0, b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetSyncWord() != false {
+		t.Error("RadioGetSyncWord() returned true while serial read failed")
+	}
+}
+
+func TestRadioGetSWTrue(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("34\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetSyncWord() != true {
+		t.Error("RadioGetSyncWord() returned false while it should return true")
+	}
+}
+
+func TestRadioGetSWFalse(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("12\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetSyncWord() != false {
+		t.Error("RadioGetSyncWord() returned true while it should return false")
+	}
+}
+
+func TestRadioSetSWWriteError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return errors.New("Mock Write Error")
+	}
+
+	defer resetOriginals()
+
+	public := true
+	if RadioSetSyncWord(public) != false {
+		t.Errorf("RadioSetSyncWord(%v) returned true while serial write failed", public)
+	}
+}
+
+func TestRadioSetSWReadError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b []byte
+		return 0, b
+	}
+
+	defer resetOriginals()
+
+	public := false
+	if RadioSetSyncWord(public) != false {
+		t.Errorf("RadioSetSyncWord(%v) returned true while serial write failed", public)
+	}
+}
+
+func TestRadioSetSWSuccess(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("ok\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	public := false
+	if RadioSetSyncWord(public) != true {
+		t.Errorf("RadioSetSyncWord(%v) returned false while it should return true", public)
+	}
+}
+
+func TestRadioGetBWWriteError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return errors.New("Mock Write Error")
+	}
+
+	defer resetOriginals()
+
+	if RadioGetBandWidth() != 0 {
+		t.Error("RadioGetBandWidth() returned non zero vlaue while serial write failed")
+	}
+}
+
+func TestRadioGetBWReadError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b []byte
+		return 0, b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetBandWidth() != 0 {
+		t.Error("RadioGetBandWidth() returned non zero value while serial read failed")
+	}
+}
+
+func TestRadioGetBWConversionError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("nan\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetBandWidth() != 0 {
+		t.Error("RadioGetBandWidth() returned non zero value while conversion failed")
+	}
+}
+
+func TestRadioGetBWSuccess(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("250\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetBandWidth() != 250 {
+		t.Error("RadioGetBandWidth() returned value other than 250 while it should return 250")
+	}
+}
+
+func TestRadioSetBWArgumentError(t *testing.T) {
+	for i := uint16(0); i < 125; i++ {
+		bw := i
+		if RadioSetBandWidth(bw) != false {
+			t.Errorf("RadioSetBandWidth(%v) returned true with the wrong bw", bw)
+		}
+	}
+
+	for i := uint16(126); i < 250; i++ {
+		bw := i
+		if RadioSetBandWidth(bw) != false {
+			t.Errorf("RadioSetBandWidth(%v) returned true with the wrong bw", bw)
+		}
+	}
+
+	for i := uint16(251); i < 500; i++ {
+		bw := i
+		if RadioSetBandWidth(bw) != false {
+			t.Errorf("RadioSetBandWidth(%v) returned true with the wrong bw", bw)
+		}
+	}
+
+	for i := uint16(501); i < maxUint16; i++ {
+		bw := i
+		if RadioSetBandWidth(bw) != false {
+			t.Errorf("RadioSetBandWidth(%v) returned true with the wrong bw", bw)
+		}
+	}
+}
+
+func TestRadioSetBWWriteError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return errors.New("Mock Write Error")
+	}
+
+	defer resetOriginals()
+
+	bw := uint16(125)
+	if RadioSetBandWidth(bw) != false {
+		t.Errorf("RadioSetBandWidth(%v) returned true while serial write failed", bw)
+	}
+}
+
+func TestRadioSetBWReadError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b []byte
+		return 0, b
+	}
+
+	defer resetOriginals()
+
+	bw := uint16(125)
+	if RadioSetBandWidth(bw) != false {
+		t.Errorf("RadioSetBandWidth(%v) returned true while serial read failed", bw)
+	}
+}
+
+func TestRadioSetBWSuccess(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("ok\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	bw := uint16(125)
+	if RadioSetBandWidth(bw) != true {
+		t.Errorf("RadioSetBandWidth(%v) returned false while it should succeed", bw)
+	}
+}
+
+func TestRadioGetSNRWriteError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return errors.New("Mock Write Error")
+	}
+
+	defer resetOriginals()
+
+	if RadioGetSNR() != -128 {
+		t.Error("RadioGetSNR() returned non default value while serial write failed")
+	}
+}
+
+func TestRadioGetSNRReadError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b []byte
+		return 0, b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetSNR() != -128 {
+		t.Error("RadioGetSNR() returned non default value while serial read failed")
+	}
+}
+
+func TestRadioGetSNRConversionError(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("nan\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetSNR() != -128 {
+		t.Error("RadioGetSNR() returned non zero value while conversion failed")
+	}
+}
+
+func TestRadioGetSNRSuccess(t *testing.T) {
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		b := []byte("5\r\n")
+		return len(b), b
+	}
+
+	defer resetOriginals()
+
+	if RadioGetSNR() != 5 {
+		t.Error("RadioGetSNR() returned value other than 5 while it should return 5")
+	}
+}
