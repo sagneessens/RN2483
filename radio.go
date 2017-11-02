@@ -432,7 +432,7 @@ func RadioGetCodingRate() uint8 {
 }
 
 // RadioSetCodingRate sets the coding rate used during transmission.
-// The spreading factor has to be passed as an uint8 between [5, 8].
+// The coding rate has to be passed as an uint8 between [5, 8].
 // The function will return true if the command succeeded.
 // If an error occured, it will return false.
 func RadioSetCodingRate(cr uint8) bool {
