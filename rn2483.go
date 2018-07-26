@@ -61,7 +61,7 @@ func read() (int, []byte) {
 		b = append(b, buf[:n]...)
 	}
 
-	DEBUG.Printf("%v bytes read: %q", len(b), b)
+	DEBUG.Printf("%v bytes read: %X", n, b)
 
 	return len(b), b
 }
@@ -81,7 +81,7 @@ func write(s string) error {
 		WARN.Println("RN2483 write error:", err)
 		return err
 	}
-	DEBUG.Printf("%v bytes written: %q", n, b)
+	DEBUG.Printf("%v bytes written: %X", n, b)
 	return nil
 }
 
