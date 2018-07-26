@@ -26,26 +26,24 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-
-	"github.com/bullettime/logger"
 )
 
 // Sleep puts the RN2483 chip to sleep for the specified number of milliseconds.
 func Sleep(length uint32) bool {
 	if length < 100 {
-		logger.Warning.Println("sys sleep called with length lower than 100:", length)
+		WARN.Println("sys sleep called with length lower than 100:", length)
 		return false
 	}
 
 	err := serialWrite(fmt.Sprintf("sys sleep %v", length))
 	if err != nil {
-		logger.Warning.Println("sys sleep error:", err)
+		WARN.Println("sys sleep error:", err)
 		return false
 	}
 
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) == invalidParameter {
-		logger.Warning.Println("sys sleep error: invalid parameter")
+		WARN.Println("sys sleep error: invalid parameter")
 		return false
 	}
 
@@ -56,7 +54,7 @@ func Sleep(length uint32) bool {
 func Reset() bool {
 	err := serialWrite("sys reset")
 	if err != nil {
-		logger.Warning.Println("reset error:", err)
+		WARN.Println("reset error:", err)
 		return false
 	}
 
@@ -69,19 +67,19 @@ func Reset() bool {
 // with the specified data (one byte).
 func SaveByte(address uint16, data uint8) bool {
 	if address < 768 || address > 1023 {
-		logger.Warning.Println("sys set nvm error: address out of range [768-1023]")
+		WARN.Println("sys set nvm error: address out of range [768-1023]")
 		return false
 	}
 
 	err := serialWrite(fmt.Sprintf("sys set nvm %X %X", address, data))
 	if err != nil {
-		logger.Warning.Println("sys set nvm error:", err)
+		WARN.Println("sys set nvm error:", err)
 		return false
 	}
 
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) == invalidParameter {
-		logger.Warning.Println("sys set nvm error: invalid parameter")
+		WARN.Println("sys set nvm error: invalid parameter")
 		return false
 	}
 
@@ -91,25 +89,25 @@ func SaveByte(address uint16, data uint8) bool {
 // ReadByte returns the data stored in the EEPROM at the specified address.
 func ReadByte(address uint16) (byte, error) {
 	if address < 768 || address > 1023 {
-		logger.Warning.Println("sys get nvm error: address out of range [768-1023]")
+		WARN.Println("sys get nvm error: address out of range [768-1023]")
 		return 0, errors.New("address out of range [768-1023]")
 	}
 
 	err := serialWrite(fmt.Sprintf("sys get nvm %X", address))
 	if err != nil {
-		logger.Warning.Println("sys get nvm error:", err)
+		WARN.Println("sys get nvm error:", err)
 		return 0, err
 	}
 
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) == invalidParameter {
-		logger.Warning.Println("sys get nvm error: invalid parameter")
+		WARN.Println("sys get nvm error: invalid parameter")
 		return 0, errors.New("invalid parameter")
 	}
 
 	value, err := strconv.ParseUint(string(sanitize(answer)), 16, 8)
 	if err != nil {
-		logger.Warning.Println("sys get nvm error:", err)
+		WARN.Println("sys get nvm error:", err)
 		return 0, err
 	}
 
@@ -121,13 +119,13 @@ func ReadByte(address uint16) (byte, error) {
 func Version() string {
 	err := serialWrite("sys get ver")
 	if err != nil {
-		logger.Warning.Println("sys get ver error:", err)
+		WARN.Println("sys get ver error:", err)
 		return ""
 	}
 
 	n, answer := serialRead()
 	if n == 0 {
-		logger.Warning.Println("sys get ver error: no answer")
+		WARN.Println("sys get ver error: no answer")
 		return ""
 	}
 
@@ -138,19 +136,19 @@ func Version() string {
 func Voltage() (uint16, error) {
 	err := serialWrite("sys get vdd")
 	if err != nil {
-		logger.Warning.Println("sys get vdd error:", err)
+		WARN.Println("sys get vdd error:", err)
 		return 0, err
 	}
 
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) == invalidParameter {
-		logger.Warning.Println("sys get vdd error: invalid parameter")
+		WARN.Println("sys get vdd error: invalid parameter")
 		return 0, errors.New("invalid parameter")
 	}
 
 	value, err := strconv.ParseUint(string(sanitize(answer)), 10, 16)
 	if err != nil {
-		logger.Warning.Println("sys get vdd error:", err)
+		WARN.Println("sys get vdd error:", err)
 		return 0, err
 	}
 
@@ -162,13 +160,13 @@ func Voltage() (uint16, error) {
 func HardwareID() string {
 	err := serialWrite("sys get hweui")
 	if err != nil {
-		logger.Warning.Println("sys get hweui error:", err)
+		WARN.Println("sys get hweui error:", err)
 		return ""
 	}
 
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) == invalidParameter {
-		logger.Warning.Println("sys get hweui error: invalid parameter")
+		WARN.Println("sys get hweui error: invalid parameter")
 		return ""
 	}
 

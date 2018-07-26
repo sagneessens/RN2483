@@ -26,7 +26,6 @@ import (
 	"errors"
 	"strconv"
 	"testing"
-	"time"
 )
 
 func TestMacResetWrongArgument(t *testing.T) {
@@ -257,31 +256,187 @@ func TestMacResumeSuccess(t *testing.T) {
 	}
 }
 
-func TestIsMacPausedFalse(t *testing.T) {
-	state.macPaused = false
-	length := 0
+//func TestIsMacPausedFalse(t *testing.T) {
+//	state.macPaused = false
+//	length := 0
+//
+//	if isMacPaused(length) == true {
+//		t.Errorf("isMacPaused(%v) returned true while the state is set to false", length)
+//	}
+//}
+//
+//func TestIsMacPausedFalseBecauseOffset(t *testing.T) {
+//	state.macPaused = true
+//	state.macPausedEnd = time.Now().Add(time.Duration(100) * time.Millisecond)
+//	length := 100
+//
+//	if isMacPaused(length) == true {
+//		t.Errorf("isMacPaused(%v) returned true wile the end time + offset is too close", length)
+//	}
+//}
+//
+//func TestIsMacPausedTrue(t *testing.T) {
+//	state.macPaused = true
+//	state.macPausedEnd = time.Now().Add(time.Duration(200) * time.Millisecond)
+//	length := 100
+//
+//	if isMacPaused(length) == false {
+//		t.Errorf("isMacPaused(%v) returned false wile the state is set to true", length)
+//	}
+//}
 
-	if isMacPaused(length) == true {
-		t.Errorf("isMacPaused(%v) returned true while the state is set to false", length)
+func TestMacJoinInvalidMode(t *testing.T) {
+	mode := "test"
+	if MacJoin(mode) == true {
+		t.Errorf("MacJoin(%s) returned true with invalid mode", mode)
 	}
 }
 
-func TestIsMacPausedFalseBecauseOffset(t *testing.T) {
-	state.macPaused = true
-	state.macPausedEnd = time.Now().Add(time.Duration(100) * time.Millisecond)
-	length := 100
+func TestMacJoinAccepted(t *testing.T) {
+	counter := 0
 
-	if isMacPaused(length) == true {
-		t.Errorf("isMacPaused(%v) returned true wile the end time + offset is too close", length)
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b = [][]byte{
+			[]byte("ok\r\n"),
+			[]byte("accepted\r\n"),
+		}
+
+		data := b[counter]
+
+		counter = (counter + 1) % len(b)
+
+		return len(data), data
+	}
+
+	defer resetOriginals()
+
+	mode := OTAA
+
+	if MacJoin(mode) == false {
+		t.Errorf("MacTX(%v) returned false", mode)
+	}
+
+	//if state.joined != true {
+	//	t.Error("Invalid joined state")
+	//}
+}
+
+func TestMacJoinDenied(t *testing.T) {
+	counter := 0
+
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b = [][]byte{
+			[]byte("ok\r\n"),
+			[]byte("denied\r\n"),
+		}
+
+		data := b[counter]
+
+		counter = (counter + 1) % len(b)
+
+		return len(data), data
+	}
+
+	defer resetOriginals()
+
+	mode := ABP
+
+	if MacJoin(mode) == true {
+		t.Errorf("MacTX(%v) returned true", mode)
+	}
+
+	//if state.joined != false {
+	//	t.Error("Invalid joined state")
+	//}
+}
+
+func TestMacTxInvalidPort(t *testing.T) {
+	uplinkType := false
+	ports := []uint8{0, 224}
+	data := []byte("test")
+
+	if MacTx(uplinkType, ports[0], data, nil) == true {
+		t.Errorf("MacTX(%v, %v, %v, nil) returned true with invalid port", uplinkType, ports[0], data)
+	}
+
+	if MacTx(uplinkType, ports[1], data, nil) == true {
+		t.Errorf("MacTX(%v, %v, %v, nil) returned true with invalid port", uplinkType, ports[1], data)
 	}
 }
 
-func TestIsMacPausedTrue(t *testing.T) {
-	state.macPaused = true
-	state.macPausedEnd = time.Now().Add(time.Duration(200) * time.Millisecond)
-	length := 100
+func TestMacTxOk(t *testing.T) {
+	counter := 0
 
-	if isMacPaused(length) == false {
-		t.Errorf("isMacPaused(%v) returned false wile the state is set to true", length)
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %s", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b = [][]byte{
+			[]byte("ok\r\n"),
+			[]byte("mac_tx_ok\r\n"),
+		}
+
+		data := b[counter]
+
+		counter = (counter + 1) % len(b)
+
+		return len(data), data
+	}
+
+	defer resetOriginals()
+
+	uplinkType := true
+	port := uint8(1)
+	data := []byte("test")
+
+	if MacTx(uplinkType, port, data, nil) == false {
+		t.Errorf("MacTX(%v, %v, %v, nil) returned false", uplinkType, port, data)
+	}
+}
+
+func TestMacTxOkRx(t *testing.T) {
+	counter := 0
+
+	serialWrite = func(s string) error {
+		t.Logf("String written to serial: %v", s)
+		return nil
+	}
+
+	serialRead = func() (int, []byte) {
+		var b = [][]byte{
+			[]byte("ok\r\n"),
+			[]byte("mac_rx 1 7265636569766564\r\n"),
+		}
+
+		data := b[counter]
+
+		counter = (counter + 1) % len(b)
+
+		return len(data), data
+	}
+
+	defer resetOriginals()
+
+	uplinkType := true
+	port := uint8(1)
+	data := []byte("test")
+	callback := func(port uint8, data []byte) {
+		t.Logf("Received message on port %v: %s", port, string(data))
+	}
+
+	if MacTx(uplinkType, port, data, callback) == false {
+		t.Errorf("MacTX(%v, %v, %v, callback) returned false", uplinkType, port, data)
 	}
 }

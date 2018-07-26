@@ -26,7 +26,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/bullettime/logger"
 	"github.com/tarm/serial"
 )
 
@@ -45,8 +44,8 @@ func init() {
 func read() (int, []byte) {
 	defer func() {
 		if r := recover(); r != nil {
-			logger.Debug.Println("Are you connected?")
-			logger.Error.Println(r)
+			DEBUG.Println("Are you connected?")
+			ERROR.Println(r)
 			os.Exit(2)
 		}
 	}()
@@ -62,7 +61,7 @@ func read() (int, []byte) {
 		b = append(b, buf[:n]...)
 	}
 
-	logger.Debug.Printf("%v bytes read: %q", len(b), b)
+	DEBUG.Printf("%v bytes read: %q", len(b), b)
 
 	return len(b), b
 }
@@ -70,8 +69,8 @@ func read() (int, []byte) {
 func write(s string) error {
 	defer func() {
 		if r := recover(); r != nil {
-			logger.Debug.Println("Are you connected?")
-			logger.Error.Println(r)
+			DEBUG.Println("Are you connected?")
+			ERROR.Println(r)
 			os.Exit(2)
 		}
 	}()
@@ -79,17 +78,17 @@ func write(s string) error {
 	b := append([]byte(s), []byte("\r\n")...)
 	n, err = rn2483.Write(b)
 	if err != nil {
-		logger.Warning.Println("RN2483 write error:", err)
+		WARN.Println("RN2483 write error:", err)
 		return err
 	}
-	logger.Debug.Printf("%v bytes written: %q", n, b)
+	DEBUG.Printf("%v bytes written: %q", n, b)
 	return nil
 }
 
 func flush() {
 	err = rn2483.Flush()
 	if err != nil {
-		logger.Warning.Println("RN2483 flush error:", err)
+		WARN.Println("RN2483 flush error:", err)
 	}
 }
 
@@ -97,10 +96,10 @@ func flush() {
 func Connect() {
 	rn2483, err = serial.OpenPort(config)
 	if err != nil {
-		logger.Error.Println(err)
+		ERROR.Println(err)
 	}
 	flush()
-	logger.Debug.Println("RN2483 connected")
+	DEBUG.Println("RN2483 connected")
 }
 
 // Disconnect will disconnect the serial device that is currently connected.
@@ -108,34 +107,34 @@ func Connect() {
 func Disconnect() {
 	defer func() {
 		if r := recover(); r != nil {
-			logger.Error.Println("Recovered:", r)
+			ERROR.Println("Recovered:", r)
 		}
 	}()
 
 	err = rn2483.Close()
 	if err != nil {
-		logger.Error.Println(err)
+		ERROR.Println(err)
 	}
-	logger.Debug.Println("RN2483 disconnected")
+	DEBUG.Println("RN2483 disconnected")
 }
 
 // SetName sets a new device name for the serial connection.
 // Reconnect to the serial device required!
 func SetName(name string) {
 	config.Name = name
-	logger.Debug.Println("RN2483 serial device:", name)
+	DEBUG.Println("RN2483 serial device:", name)
 }
 
 // SetBaud sets a new baud rate for the serial connection.
 // Reconnect to the serial device required!
 func SetBaud(baud int) {
 	config.Baud = baud
-	logger.Debug.Println("RN2483 baud rate:", baud)
+	DEBUG.Println("RN2483 baud rate:", baud)
 }
 
 // SetTimeout sets a new read timeout for the serial connection.
 // Reconnect to the serial device required!
 func SetTimeout(timeout time.Duration) {
 	config.ReadTimeout = timeout
-	logger.Debug.Println("RN2483 read timeout:", timeout)
+	DEBUG.Println("RN2483 read timeout:", timeout)
 }

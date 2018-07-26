@@ -22,12 +22,11 @@
 
 package rn2483
 
-import "time"
-
-type myState struct {
-	macPaused    bool
-	macPausedEnd time.Time
-}
+//type myState struct {
+//	macPaused    bool
+//	macPausedEnd time.Time
+//	joined       bool
+//}
 
 const (
 	maxUint8  = ^uint8(0)
@@ -69,8 +68,40 @@ const (
 	BW3 = "500"
 )
 
+// The possible join modes
+const (
+	OTAA = "otaa"
+	ABP  = "abp"
+)
+
+// The possible uplink types
+const (
+	CONFIRMED   = "cnf"
+	UNCONFIRMED = "uncnf"
+)
+
+// The possible data rates
+const (
+	SF7BW125  = uint8(5)
+	SF8BW125  = uint8(4)
+	SF9BW125  = uint8(3)
+	SF10BW125 = uint8(2)
+	SF11BW125 = uint8(1)
+	SF12BW125 = uint8(0)
+)
+
+// The possible TXPowers
+const (
+	dBm20 = 0
+	dBm14 = 1
+	dBm11 = 2
+	dBm8  = 3
+	dBm5  = 4
+	dBm2  = 5
+)
+
 var (
-	state            = new(myState)
+	//state            = new(myState)
 	invalidParameter = "invalid_param"
 	serialRead       = read
 	serialWrite      = write

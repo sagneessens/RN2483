@@ -26,8 +26,6 @@ import (
 	"fmt"
 	"strconv"
 	"time"
-
-	"github.com/bullettime/logger"
 )
 
 // RadioRxBlocking will open the receiver.
@@ -47,14 +45,14 @@ func RadioRxBlocking(window uint16) []byte {
 
 	err := serialWrite(fmt.Sprintf("radio rx %v", window))
 	if err != nil {
-		logger.Warning.Println("radio rx error:", err)
+		WARN.Println("radio rx error:", err)
 		return b
 	}
 
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) == invalidParameter ||
 		string(sanitize(answer)) == "busy" {
-		logger.Warning.Println("radio rx error: busy or invalid parameter")
+		WARN.Println("radio rx error: busy or invalid parameter")
 		return b
 	}
 
@@ -78,7 +76,7 @@ func RadioRxBlocking(window uint16) []byte {
 func RadioTx(data []byte) bool {
 	//TODO check modulation to get maximum bytes allowed: 255 LoRa and 64 FSK
 	if len(data) == 0 {
-		logger.Warning.Println("radio tx error: trying to send zero bytes")
+		WARN.Println("radio tx error: trying to send zero bytes")
 		return false
 	}
 
@@ -86,13 +84,13 @@ func RadioTx(data []byte) bool {
 
 	err := serialWrite(fmt.Sprintf("radio tx %X", data))
 	if err != nil {
-		logger.Warning.Println("radio tx error:", err)
+		WARN.Println("radio tx error:", err)
 		return false
 	}
 
 	n, firstAnswer := serialRead()
 	if n == 0 || string(sanitize(firstAnswer)) != "ok" {
-		logger.Warning.Println("radio tx error:", string(sanitize(firstAnswer)))
+		WARN.Println("radio tx error:", string(sanitize(firstAnswer)))
 		return false
 	}
 
@@ -105,7 +103,7 @@ func RadioTx(data []byte) bool {
 		default:
 			n, answer := serialRead()
 			if n != 0 && string(sanitize(answer)) == "radio_err" {
-				logger.Warning.Println("radio tx error: radio_err")
+				WARN.Println("radio tx error: radio_err")
 				return false
 			}
 
@@ -121,13 +119,13 @@ func RadioTx(data []byte) bool {
 func RadioGetModulation() string {
 	err := serialWrite("radio get mod")
 	if err != nil {
-		logger.Warning.Println("radio get mod error:", err)
+		WARN.Println("radio get mod error:", err)
 		return ""
 	}
 
 	n, answer := serialRead()
 	if n == 0 {
-		logger.Warning.Println("radio get mod error: no answer")
+		WARN.Println("radio get mod error: no answer")
 		return ""
 	}
 
@@ -140,19 +138,19 @@ func RadioGetModulation() string {
 // When the change isn't accepted or the modulation is wrong, it will return false.
 func RadioSetModulation(mod string) bool {
 	if !stringInList(mod, modulations) {
-		logger.Warning.Println("radio set mod error: invalid modulation")
+		WARN.Println("radio set mod error: invalid modulation")
 		return false
 	}
 
 	err := serialWrite(fmt.Sprintf("radio set mod %s", mod))
 	if err != nil {
-		logger.Warning.Println("radio set mod error:", err)
+		WARN.Println("radio set mod error:", err)
 		return false
 	}
 
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) != "ok" {
-		logger.Warning.Println("radio set mod:", string(sanitize(answer)))
+		WARN.Println("radio set mod:", string(sanitize(answer)))
 		return false
 	}
 
@@ -164,19 +162,19 @@ func RadioSetModulation(mod string) bool {
 func RadioGetFrequency() uint32 {
 	err := serialWrite("radio get freq")
 	if err != nil {
-		logger.Warning.Println("radio get freq error:", err)
+		WARN.Println("radio get freq error:", err)
 		return 0
 	}
 
 	n, answer := serialRead()
 	if n == 0 {
-		logger.Warning.Println("radio get freq error: no answer")
+		WARN.Println("radio get freq error: no answer")
 		return 0
 	}
 
 	value, err := strconv.ParseUint(string(sanitize(answer)), 10, 32)
 	if err != nil {
-		logger.Warning.Println("radio get freq error:", err)
+		WARN.Println("radio get freq error:", err)
 		return 0
 	}
 
@@ -188,19 +186,19 @@ func RadioGetFrequency() uint32 {
 // The function will return true when the frequency changed and false when an error occured.
 func RadioSetFrequency(freq uint32) bool {
 	if (freq < 433050000 || freq > 434790000) && (freq < 863000000 || freq > 870000000) {
-		logger.Warning.Println("radio set freq error: invalid frequency", freq)
+		WARN.Println("radio set freq error: invalid frequency", freq)
 		return false
 	}
 
 	err := serialWrite(fmt.Sprintf("radio set freq %v", freq))
 	if err != nil {
-		logger.Warning.Println("radio set freq error:", err)
+		WARN.Println("radio set freq error:", err)
 		return false
 	}
 
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) != "ok" {
-		logger.Warning.Println("radio set freq error: invalid parameter")
+		WARN.Println("radio set freq error: invalid parameter")
 		return false
 	}
 
@@ -213,19 +211,19 @@ func RadioSetFrequency(freq uint32) bool {
 func RadioGetPower() int8 {
 	err := serialWrite("radio get pwr")
 	if err != nil {
-		logger.Warning.Println("radio get pwr error:", err)
+		WARN.Println("radio get pwr error:", err)
 		return -15
 	}
 
 	n, answer := serialRead()
 	if n == 0 {
-		logger.Warning.Println("radio get pwr error: no answer")
+		WARN.Println("radio get pwr error: no answer")
 		return -15
 	}
 
 	value, err := strconv.ParseInt(string(sanitize(answer)), 10, 8)
 	if err != nil {
-		logger.Warning.Println("radio get pwr error:", err)
+		WARN.Println("radio get pwr error:", err)
 		return -15
 	}
 
@@ -238,19 +236,19 @@ func RadioGetPower() int8 {
 // an error occured.
 func RadioSetPower(pwr int8) bool {
 	if pwr < -3 || pwr > 15 {
-		logger.Warning.Println("radio set pwr error: invalid power", pwr)
+		WARN.Println("radio set pwr error: invalid power", pwr)
 		return false
 	}
 
 	err := serialWrite(fmt.Sprintf("radio set pwr %v", pwr))
 	if err != nil {
-		logger.Warning.Println("radio set pwr error:", err)
+		WARN.Println("radio set pwr error:", err)
 		return false
 	}
 
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) != "ok" {
-		logger.Warning.Println("radio set pwr error: invalid parameter")
+		WARN.Println("radio set pwr error: invalid parameter")
 		return false
 	}
 
@@ -264,19 +262,19 @@ func RadioSetPower(pwr int8) bool {
 func RadioGetSpreadingFactor() uint8 {
 	err := serialWrite("radio get sf")
 	if err != nil {
-		logger.Warning.Println("radio get sf error:", err)
+		WARN.Println("radio get sf error:", err)
 		return 0
 	}
 
 	n, answer := serialRead()
 	if n == 0 {
-		logger.Warning.Println("radio get sf error: no answer")
+		WARN.Println("radio get sf error: no answer")
 		return 0
 	}
 
 	value, err := strconv.ParseUint(string(sanitize(answer[2:])), 10, 8)
 	if err != nil {
-		logger.Warning.Println("radio get sf error:", err)
+		WARN.Println("radio get sf error:", err)
 		return 0
 	}
 
@@ -289,19 +287,19 @@ func RadioGetSpreadingFactor() uint8 {
 // If an error occured, it will return false.
 func RadioSetSpreadingFactor(sf uint8) bool {
 	if sf < 7 || sf > 12 {
-		logger.Warning.Println("radio set sf error: invalid spreading factor", sf)
+		WARN.Println("radio set sf error: invalid spreading factor", sf)
 		return false
 	}
 
 	err := serialWrite(fmt.Sprintf("radio set sf %v", SFs[sf]))
 	if err != nil {
-		logger.Warning.Println("radio set sf error:", err)
+		WARN.Println("radio set sf error:", err)
 		return false
 	}
 
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) != "ok" {
-		logger.Warning.Println("radio set sf error: invalid parameter")
+		WARN.Println("radio set sf error: invalid parameter")
 		return false
 	}
 
@@ -314,13 +312,13 @@ func RadioSetSpreadingFactor(sf uint8) bool {
 func RadioGetCrc() bool {
 	err := serialWrite("radio get crc")
 	if err != nil {
-		logger.Warning.Println("radio get crc error:", err)
+		WARN.Println("radio get crc error:", err)
 		return false
 	}
 
 	n, answer := serialRead()
 	if n == 0 {
-		logger.Warning.Println("radio get crc error: no answer")
+		WARN.Println("radio get crc error: no answer")
 		return false
 	}
 
@@ -344,13 +342,13 @@ func RadioSetCrc(on bool) bool {
 
 	err := serialWrite(fmt.Sprintf("radio set crc %v", state))
 	if err != nil {
-		logger.Warning.Println("radio set crc error:", err)
+		WARN.Println("radio set crc error:", err)
 		return false
 	}
 
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) != "ok" {
-		logger.Warning.Println("radio set crc error: invalid parameter")
+		WARN.Println("radio set crc error: invalid parameter")
 		return false
 	}
 
@@ -362,13 +360,13 @@ func RadioSetCrc(on bool) bool {
 func RadioGetIqi() bool {
 	err := serialWrite("radio get iqi")
 	if err != nil {
-		logger.Warning.Println("radio get iqi error:", err)
+		WARN.Println("radio get iqi error:", err)
 		return false
 	}
 
 	n, answer := serialRead()
 	if n == 0 {
-		logger.Warning.Println("radio get iqi error: no answer")
+		WARN.Println("radio get iqi error: no answer")
 		return false
 	}
 
@@ -392,13 +390,13 @@ func RadioSetIqi(on bool) bool {
 
 	err := serialWrite(fmt.Sprintf("radio set iqi %v", state))
 	if err != nil {
-		logger.Warning.Println("radio set iqi error:", err)
+		WARN.Println("radio set iqi error:", err)
 		return false
 	}
 
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) != "ok" {
-		logger.Warning.Println("radio set iqi error: invalid parameter")
+		WARN.Println("radio set iqi error: invalid parameter")
 		return false
 	}
 
@@ -412,19 +410,19 @@ func RadioSetIqi(on bool) bool {
 func RadioGetCodingRate() uint8 {
 	err := serialWrite("radio get cr")
 	if err != nil {
-		logger.Warning.Println("radio get cr error:", err)
+		WARN.Println("radio get cr error:", err)
 		return 0
 	}
 
 	n, answer := serialRead()
 	if n == 0 {
-		logger.Warning.Println("radio get cr error: no answer")
+		WARN.Println("radio get cr error: no answer")
 		return 0
 	}
 
 	value, err := strconv.ParseUint(string(sanitize(answer[2:])), 10, 8)
 	if err != nil {
-		logger.Warning.Println("radio get cr error:", err)
+		WARN.Println("radio get cr error:", err)
 		return 0
 	}
 
@@ -437,19 +435,19 @@ func RadioGetCodingRate() uint8 {
 // If an error occured, it will return false.
 func RadioSetCodingRate(cr uint8) bool {
 	if cr < 5 || cr > 8 {
-		logger.Warning.Println("radio set cr error: invalid coding rate", cr)
+		WARN.Println("radio set cr error: invalid coding rate", cr)
 		return false
 	}
 
 	err := serialWrite(fmt.Sprintf("radio set cr %v", CodingRates[cr]))
 	if err != nil {
-		logger.Warning.Println("radio set cr error:", err)
+		WARN.Println("radio set cr error:", err)
 		return false
 	}
 
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) != "ok" {
-		logger.Warning.Println("radio set cr error: invalid parameter")
+		WARN.Println("radio set cr error: invalid parameter")
 		return false
 	}
 
@@ -463,19 +461,19 @@ func RadioSetCodingRate(cr uint8) bool {
 func RadioGetWatchDogTimer() uint32 {
 	err := serialWrite("radio get wdt")
 	if err != nil {
-		logger.Warning.Println("radio get wdt error:", err)
+		WARN.Println("radio get wdt error:", err)
 		return 0
 	}
 
 	n, answer := serialRead()
 	if n == 0 {
-		logger.Warning.Println("radio get wdt error: no answer")
+		WARN.Println("radio get wdt error: no answer")
 		return 0
 	}
 
 	value, err := strconv.ParseUint(string(sanitize(answer)), 10, 32)
 	if err != nil {
-		logger.Warning.Println("radio get wdt error:", err)
+		WARN.Println("radio get wdt error:", err)
 		return 0
 	}
 
@@ -492,13 +490,13 @@ func RadioGetWatchDogTimer() uint32 {
 func RadioSetWatchDogTimer(length uint32) bool {
 	err := serialWrite(fmt.Sprintf("radio set wdt %v", length))
 	if err != nil {
-		logger.Warning.Println("radio set wdt error:", err)
+		WARN.Println("radio set wdt error:", err)
 		return false
 	}
 
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) != "ok" {
-		logger.Warning.Println("radio set wdt error: invalid parameter")
+		WARN.Println("radio set wdt error: invalid parameter")
 		return false
 	}
 
@@ -511,13 +509,13 @@ func RadioSetWatchDogTimer(length uint32) bool {
 func RadioGetSyncWord() bool {
 	err := serialWrite("radio get sync")
 	if err != nil {
-		logger.Warning.Println("radio get sync error:", err)
+		WARN.Println("radio get sync error:", err)
 		return false
 	}
 
 	n, answer := serialRead()
 	if n == 0 {
-		logger.Warning.Println("radio get sync error: no answer")
+		WARN.Println("radio get sync error: no answer")
 		return false
 	}
 
@@ -543,13 +541,13 @@ func RadioSetSyncWord(public bool) bool {
 
 	err := serialWrite(fmt.Sprintf("radio set sync %v", state))
 	if err != nil {
-		logger.Warning.Println("radio set sync error:", err)
+		WARN.Println("radio set sync error:", err)
 		return false
 	}
 
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) != "ok" {
-		logger.Warning.Println("radio set sync error: invalid parameter")
+		WARN.Println("radio set sync error: invalid parameter")
 		return false
 	}
 
@@ -563,19 +561,19 @@ func RadioSetSyncWord(public bool) bool {
 func RadioGetBandWidth() uint16 {
 	err := serialWrite("radio get bw")
 	if err != nil {
-		logger.Warning.Println("radio get bw error:", err)
+		WARN.Println("radio get bw error:", err)
 		return 0
 	}
 
 	n, answer := serialRead()
 	if n == 0 {
-		logger.Warning.Println("radio get bw error: no answer")
+		WARN.Println("radio get bw error: no answer")
 		return 0
 	}
 
 	value, err := strconv.ParseUint(string(sanitize(answer)), 10, 16)
 	if err != nil {
-		logger.Warning.Println("radio get bw error:", err)
+		WARN.Println("radio get bw error:", err)
 		return 0
 	}
 
@@ -589,19 +587,19 @@ func RadioGetBandWidth() uint16 {
 // If an error occured, it will return false.
 func RadioSetBandWidth(bw uint16) bool {
 	if _, ok := BWs[bw]; !ok {
-		logger.Warning.Println("radio set bw error: invalid bandwidth", bw)
+		WARN.Println("radio set bw error: invalid bandwidth", bw)
 		return false
 	}
 
 	err := serialWrite(fmt.Sprintf("radio set bw %v", BWs[bw]))
 	if err != nil {
-		logger.Warning.Println("radio set bw error:", err)
+		WARN.Println("radio set bw error:", err)
 		return false
 	}
 
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) != "ok" {
-		logger.Warning.Println("radio set bw error: invalid parameter")
+		WARN.Println("radio set bw error: invalid parameter")
 		return false
 	}
 
@@ -613,19 +611,19 @@ func RadioSetBandWidth(bw uint16) bool {
 func RadioGetSNR() int8 {
 	err := serialWrite("radio get snr")
 	if err != nil {
-		logger.Warning.Println("radio get snr error:", err)
+		WARN.Println("radio get snr error:", err)
 		return -128
 	}
 
 	n, answer := serialRead()
 	if n == 0 {
-		logger.Warning.Println("radio get s r error: no answer")
+		WARN.Println("radio get s r error: no answer")
 		return -128
 	}
 
 	value, err := strconv.ParseInt(string(sanitize(answer)), 10, 8)
 	if err != nil {
-		logger.Warning.Println("radio get snr error:", err)
+		WARN.Println("radio get snr error:", err)
 		return -128
 	}
 
