@@ -61,7 +61,7 @@ func read() (int, []byte) {
 		b = append(b, buf[:n]...)
 	}
 
-	DEBUG.Printf("%v bytes read: %X", n, b)
+	DEBUG.Printf("%v bytes read: %X", len(b), b)
 
 	return len(b), b
 }
