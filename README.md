@@ -1,7 +1,7 @@
 # RN2483
 [![Build Status](https://travis-ci.org/BulletTime/RN2483.svg?branch=master)](https://travis-ci.org/BulletTime/RN2483)
 [![GoDoc](https://godoc.org/github.com/BulletTime/RN2483?status.svg)](https://godoc.org/github.com/BulletTime/RN2483)
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/BulletTime/RN2483/blob/master/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/BulletTime/RN2483/blob/master/LICENSE)
 
 This library gives users the ability to use the RN2483 module in their application. For more info about the RN2483 module commands, see <http://ww1.microchip.com/downloads/en/DeviceDoc/40001784F.pdf>.
 
