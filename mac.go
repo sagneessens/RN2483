@@ -137,19 +137,22 @@ func MacJoin(mode string) bool {
 		return false
 	}
 
-	timeout := time.After(time.Second * 5)
+	tick := time.Tick(time.Second)
+	timeout := time.After(time.Second * 15)
 
 	for {
 		select {
-		case <-timeout:
+		case <- timeout:
 			return false
-		default:
+		case <- tick:
 			n, answer = serialRead()
-			if n != 0 && string(sanitize(answer)) != "accepted" {
-				WARN.Println("mac join error:", string(sanitize(answer)))
-				return false
-			} else {
-				//state.joined = true
+
+			if n != 0 {
+				if string(sanitize(answer)) != "accepted" {
+					WARN.Println("mac join error:", string(sanitize(answer)))
+					return false
+				}
+
 				return true
 			}
 		}
@@ -193,13 +196,15 @@ func MacTx(confirmed bool, port uint8, data []byte, callback receiveCallback) bo
 		return false
 	}
 
-	timeout := time.After(time.Second * 5)
+	timeout := time.After(time.Second * 15)
+	tick := time.Tick(time.Second)
 
 	for {
 		select {
-		case <-timeout:
+		case <- timeout:
+			WARN.Println("timed out")
 			return false
-		default:
+		case <- tick:
 			n, answer = serialRead()
 			s := string(sanitize(answer))
 
@@ -377,6 +382,26 @@ func MacSetApplicationSessionKey(key string) error {
 	n, answer := serialRead()
 	if n == 0 || string(sanitize(answer)) == invalidParameter {
 		return errors.New("could not set application session key: invalid parameter")
+	}
+
+	return nil
+}
+
+// MacSetApplicationKey will configure the module with an application key.
+// The key is a 16-byte hexadecimal value given as a string.
+func MacSetApplicationKey(key string) error {
+	if len(key) != 32 {
+		return errors.New("invalid key length")
+	}
+
+	err := serialWrite(fmt.Sprintf("mac set appkey %s", key))
+	if err != nil {
+		return errors.Wrap(err, "could not set application key")
+	}
+
+	n, answer := serialRead()
+	if n == 0 || string(sanitize(answer)) == invalidParameter {
+		return errors.New("could not set application key: invalid parameter")
 	}
 
 	return nil

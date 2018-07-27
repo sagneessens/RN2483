@@ -92,12 +92,12 @@ const (
 
 // The possible TXPowers
 const (
-	dBm20 = 0
-	dBm14 = 1
-	dBm11 = 2
-	dBm8  = 3
-	dBm5  = 4
-	dBm2  = 5
+	DBm20 = 0
+	DBm14 = 1
+	DBm11 = 2
+	DBm8  = 3
+	DBm5  = 4
+	DBm2  = 5
 )
 
 var (
