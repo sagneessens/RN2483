@@ -28,6 +28,7 @@ import (
 	"strings"
 	"time"
 	"github.com/pkg/errors"
+	"encoding/hex"
 )
 
 type receiveCallback func(port uint8, data []byte)
@@ -217,12 +218,20 @@ func MacTx(confirmed bool, port uint8, data []byte, callback receiveCallback) bo
 				} else if strings.HasPrefix(s, "mac_rx") {
 					if callback != nil {
 						params := strings.Split(s, " ")
+
 						port, err := strconv.ParseInt(params[1], 10, 8)
 						if err != nil {
 							WARN.Printf("mac_rx invalid port: %s", params[1])
-						} else {
-							callback(uint8(port), []byte(params[2]))
+							return true
 						}
+
+						decoded, err := hex.DecodeString(params[2])
+						if err != nil {
+							WARN.Printf("mac_rx invalid hex data: %s", params[2])
+							return true
+						}
+
+						callback(uint8(port), []byte(decoded))
 					}
 					return true
 				} else {
