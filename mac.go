@@ -548,6 +548,21 @@ func MacSetADR(adr bool) error {
 	return nil
 }
 
+// MacSetLinkCheck will set the time interval for the link check process to be triggered.
+func MacSetLinkCheck(interval uint16) error {
+	err := serialWrite(fmt.Sprintf("mac set linkchk %v", interval))
+	if err != nil {
+		return errors.Wrap(err, "could not set link check")
+	}
+
+	n, answer := serialRead()
+	if n == 0 || string(sanitize(answer)) == invalidParameter {
+		return errors.New("could not set link check: invalid parameter")
+	}
+
+	return nil
+}
+
 //TODO: implement mac get status
 
 // MacGetChannelFrequency will return the frequency on the requested channelID.
